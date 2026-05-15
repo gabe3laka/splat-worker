@@ -46,8 +46,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
                                                                                             # Clone gsplat examples (we vendor a stripped trainer entrypoint via rp_handler)
                                                                                             RUN git clone --depth 1 --branch v1.5.0 https://github.com/nerfstudio-project/gsplat.git /opt/gsplat \
-                                                                                                && pip install -r /opt/gsplat/examples/requirements.txt \
-    && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview pillow opencv-python-headless
+                                                                                                && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview
 
                                                                                                 WORKDIR /app
                                                                                                 COPY rp_handler.py /app/rp_handler.py
