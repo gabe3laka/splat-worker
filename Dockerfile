@@ -51,7 +51,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
                                                                                                 # pycolmap: gsplat examples want the rmbrualla fork (SceneManager API),
 # NOT PyPI's official pycolmap (Reconstruction API). Replace cleanly.
 RUN pip uninstall -y pycolmap || true \
- && pip install git+https://github.com/rmbrualla/pycolmap@cc7ea4b7301ecdb3eebf67e0a0e6f3c0b8e7c6c2
+ && pip install git+https://github.com/rmbrualla/pycolmap.git
 
 WORKDIR /app
                                                                                                 COPY rp_handler.py /app/rp_handler.py
