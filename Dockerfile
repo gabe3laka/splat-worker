@@ -46,9 +46,14 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
                                                                                             # Clone gsplat examples (we vendor a stripped trainer entrypoint via rp_handler)
                                                                                             RUN git clone --depth 1 --branch v1.5.0 https://github.com/nerfstudio-project/gsplat.git /opt/gsplat \
-                                                                                                && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview matplotlib scipy scikit-learn pyyaml pycolmap
+                                                                                                && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview matplotlib scipy scikit-learn pyyaml
 
-                                                                                                WORKDIR /app
+                                                                                                # pycolmap: gsplat examples want the rmbrualla fork (SceneManager API),
+# NOT PyPI's official pycolmap (Reconstruction API). Replace cleanly.
+RUN pip uninstall -y pycolmap || true \
+ && pip install git+https://github.com/rmbrualla/pycolmap@cc7ea4b7301ecdb3eebf67e0a0e6f3c0b8e7c6c2
+
+WORKDIR /app
                                                                                                 COPY rp_handler.py /app/rp_handler.py
 
                                                                                                 # RunPod serverless entrypoint
