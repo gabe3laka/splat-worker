@@ -98,14 +98,14 @@ def run_colmap(frames_dir: Path, workspace: Path) -> int:
         "--database_path", str(db),
         "--image_path", str(frames_dir),
         "--ImageReader.single_camera", "1",
-        "--SiftExtraction.use_gpu", "1",
+        "--SiftExtraction.use_gpu", "0",
     ])
 
     _progress("colmap exhaustive_matcher")
     _run([
         "colmap", "exhaustive_matcher",
         "--database_path", str(db),
-        "--SiftMatching.use_gpu", "1",
+        "--SiftMatching.use_gpu", "0",
     ])
 
     _progress("colmap mapper")
@@ -249,7 +249,7 @@ def handler(job: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "splat_url": splat_url,
             "scan_id": scan_id,
-            "status": "completed",
+            "status": "complete",
             "metrics": metrics,
         }
     except Exception as e:
