@@ -45,17 +45,24 @@ ENV DEBIAN_FRONTEND=noninteractive \
                                                                                             RUN pip install gsplat==1.5.0
 
                                                                                             # Clone gsplat examples (we vendor a stripped trainer entrypoint via rp_handler)
+                                                                                            # Then install the trainer's runtime deps explicitly. We avoid `-r requirements.txt`
+                                                                                            # because that file pins a stale pycolmap commit (cc7ea4b) no longer in the fork;
+                                                                                            # we install the rmbrualla pycolmap fork separately below.
                                                                                             RUN git clone --depth 1 --branch v1.5.0 https://github.com/nerfstudio-project/gsplat.git /opt/gsplat \
-                                                                                                && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview matplotlib scipy scikit-learn pyyaml
+                                                                                             && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview matplotlib scipy scikit-learn pyyaml tensorly "torchmetrics[image]"
 
-                                                                                                # pycolmap: gsplat examples want the rmbrualla fork (SceneManager API),
-# NOT PyPI's official pycolmap (Reconstruction API). Replace cleanly.
-RUN pip uninstall -y pycolmap || true \
- && pip install git+https://github.com/rmbrualla/pycolmap.git
+                                                                                             # fused-ssim: CUDA-compiled SSIM kernel required by gsplat examples/simple_trainer.py
+                                                                                             # (imported unconditionally at module top). Must be built against the same torch+CUDA.
+                                                                                             RUN pip install git+https://github.com/rahul-goel/fused-ssim.git
 
-WORKDIR /app
-                                                                                                COPY rp_handler.py /app/rp_handler.py
+                                                                                             # pycolmap: gsplat examples want the rmbrualla fork (SceneManager API),
+                                                                                             # NOT PyPI's official pycolmap (Reconstruction API). Replace cleanly.
+                                                                                             RUN pip uninstall -y pycolmap || true \
+                                                                                              && pip install git+https://github.com/rmbrualla/pycolmap.git
 
-                                                                                                # RunPod serverless entrypoint
-                                                                                                CMD ["python", "-u", "rp_handler.py"]
-                                                                                                
+                                                                                              WORKDIR /app
+                                                                                              COPY rp_handler.py /app/rp_handler.py
+
+                                                                                              # RunPod serverless entrypoint
+                                                                                              CMD ["python", "-u", "rp_handler.py"]
+                                                                                              
