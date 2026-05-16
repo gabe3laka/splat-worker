@@ -53,7 +53,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
                                                                                              # fused-ssim: CUDA-compiled SSIM kernel required by gsplat examples/simple_trainer.py
                                                                                              # (imported unconditionally at module top). Must be built against the same torch+CUDA.
-                                                                                             RUN pip install git+https://github.com/rahul-goel/fused-ssim.git
+                                                                                             RUN pip install --no-build-isolation --no-cache-dir "setuptools>=64" wheel ninja \
+                                                                                              && CUDA_ARCHITECTURES="80;86;89;90" pip install --no-build-isolation -v \
+                                                                                                    git+https://github.com/rahul-goel/fused-ssim.git
 
                                                                                              # pycolmap: gsplat examples want the rmbrualla fork (SceneManager API),
                                                                                              # NOT PyPI's official pycolmap (Reconstruction API). Replace cleanly.
