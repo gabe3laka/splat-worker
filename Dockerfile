@@ -42,13 +42,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
                                                                                             requests
 
                                                                                             # gsplat (CUDA-accelerated 3DGS rasterizer/trainer)
-                                                                                            RUN pip install gsplat==1.5.0
+                                                                                            RUN pip install --no-build-isolation -v gsplat==1.5.3
 
                                                                                             # Clone gsplat examples (we vendor a stripped trainer entrypoint via rp_handler)
                                                                                             # Then install the trainer's runtime deps explicitly. We avoid `-r requirements.txt`
                                                                                             # because that file pins a stale pycolmap commit (cc7ea4b) no longer in the fork;
                                                                                             # we install the rmbrualla pycolmap fork separately below.
-                                                                                            RUN git clone --depth 1 --branch v1.5.0 https://github.com/nerfstudio-project/gsplat.git /opt/gsplat \
+                                                                                            RUN git clone --depth 1 --branch v1.5.3 https://github.com/nerfstudio-project/gsplat.git /opt/gsplat \
                                                                                              && pip install imageio imageio-ffmpeg tyro viser splines tensorboard nerfview matplotlib scipy scikit-learn pyyaml tensorly "torchmetrics[image]"
 
                                                                                              # fused-ssim: CUDA-compiled SSIM kernel required by gsplat examples/simple_trainer.py
