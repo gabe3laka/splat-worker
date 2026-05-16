@@ -49,9 +49,9 @@ def _progress(msg: str) -> None:
     print(f"[splat-worker] {msg}", flush=True)
 
 
-def _run(cmd: list[str], cwd: str | None = None) -> None:
+def _run(cmd: list[str], cwd: str | None = None, env: dict | None = None) -> None:
     _progress("$ " + " ".join(cmd))
-    res = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+      res = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True)
     if res.returncode != 0:
         sys.stdout.write(res.stdout)
         sys.stderr.write(res.stderr)
@@ -154,7 +154,7 @@ def train_splat(frames_dir: Path, colmap_ws: Path, out_ply: Path, iters: int) ->
         "--result_dir", str(result_dir),
         "--max_steps", str(iters),
         "--disable_viewer",
-    ])
+    ], env={**os.environ, "CUDA_VISIBLE_DEVICES": "0"})
     train_time = time.time() - t0
 
     # Find produced PLY (gsplat saves to result_dir/ply/point_cloud_*.ply or similar)
