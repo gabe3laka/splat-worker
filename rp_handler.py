@@ -150,6 +150,7 @@ def train_splat(frames_dir: Path, colmap_ws: Path, out_ply: Path, iters: int) ->
     _run([
         "python", str(trainer), "default",
         "--data_dir", str(data_dir),
+        "--data_factor", "1",
         "--result_dir", str(result_dir),
         "--max_steps", str(iters),
         "--disable_viewer",
