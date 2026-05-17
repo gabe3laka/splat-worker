@@ -1,91 +1,58 @@
 # splat-worker
 
-RunPod serverless worker that trains a real 3D Gaussian Splat from a phone
-scan video and uploads `scene.ply` to Supabase Storage. Designed to live
-side-by-side with [`lingbot-map-worker`](https://github.com/gabe3laka/lingbot-map-worker)
-without touching it.
+RunPod serverless worker that trains a 3D Gaussian Splat from a phone scan video and uploads `scene.ply` to Supabase Storage. Output is consumed by SuperSplat Viewer in the browser.
 
-- **Trainer**: [gsplat](https://github.com/nerfstudio-project/gsplat) v1.5.0
-- **SfM**: COLMAP (fresh run; no reuse of lingbot extrinsics)
-- **Base image**: `nvidia/cuda:12.8.0-devel-ubuntu22.04` + PyTorch 2.8 cu128
-- **GPU**: RTX A5000 24 GB (same class as lingbot)
-- **Output**: `.ply` consumed by SuperSplat in the browser
-
-## Pipeline
-
-```
-video_url -> ffmpeg frames -> COLMAP sparse -> gsplat train -> scene.ply -> Supabase Storage
-```
-
-## Input (RunPod job)
+## Job input
 
 ```json
 {
-  "input": {
-    "video_url": "https://.../scan.mp4",
-    "scan_id": "uuid",
-    "patient_id": "uuid",
-    "iters": 15000,
-    "fps": 2
-  }
+  "video_url": "https://.../scan.mp4",
+  "scan_id": "uuid",
+  "patient_id": "uuid",
+  "iters": 7000,
+  "fps": 2
 }
 ```
 
-`iters` and `fps` are optional. `iters` defaults to the `SPLAT_ITERS` env var
-(default 15000, allowed range 1000-60000). `fps` defaults to 2.
+`iters` and `fps` are optional and override the `SPLAT_ITERS` / `SPLAT_FPS` env vars.
 
-## Output
+## Job output
 
 On success:
 
 ```json
-{
-  "splat_url": "<patient_id>/<scan_id>/scene.ply",
-  "scan_id": "...",
-  "status": "completed",
-  "metrics": {
-    "num_gaussians": 412345,
-    "iters": 15000,
-    "train_time_s": 612.4,
-    "frames_extracted": 240,
-    "colmap_images": 238,
-    "total_time_s": 731.0
-  }
-}
+{ "status": "complete", "ply_path": "<patient_id>/<scan_id>/scene.ply" }
 ```
+
+The PLY is uploaded to Supabase Storage bucket `scan-splats` at `{patient_id}/{scan_id}/scene.ply`.
 
 On failure:
 
 ```json
-{
-  "status": "failed",
-  "scan_id": "...",
-  "error": "...",
-  "traceback": "..."
-}
+{ "status": "error", "error": "<message>" }
 ```
 
-## Environment variables
+## Required env vars
 
-| Name | Required | Notes |
-|------|----------|-------|
-| `SUPABASE_URL` | yes | Project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | yes | Service-role key (write to Storage) |
-| `SUPABASE_BUCKET` | no | Defaults to `scan-splats` |
-| `SPLAT_ITERS` | no | Default training iterations (default 15000) |
-
-## RunPod endpoint setup
-
-1. Build from this GitHub repo (`gabe3laka/splat-worker`, branch `main`).
-2. GPU: RTX A5000 (or any 24 GB Ampere+).
-3. Container disk: 50 GB.
-4. Env vars: set the four above.
-5. Endpoint URL is consumed by the dental-flow `reconstruct-splat` Edge
-   Function (separate from the lingbot path).
-
-The lingbot endpoint `mvwq1zzz0smpc0` is intentionally **not** modified by
-this project.
-
-## License
-
-MIT - see [LICENSE](./LICENSE).
+- `SUPABASE_URL`
+- - `SUPABASE_SERVICE_ROLE_KEY`
+ 
+  - ## Optional env vars
+ 
+  - - `SUPABASE_BUCKET` (default `scan-splats`)
+    - - `SPLAT_ITERS` (default `7000`)
+      - - `SPLAT_FPS` (default `2`)
+       
+        - ## Pipeline
+       
+        - 1. Download `video_url` to tmp.
+          2. 2. ffmpeg extracts frames at `fps`. A minimum of 10 frames is required.
+             3. 3. COLMAP feature extraction + mapping (CPU SIFT).
+                4. 4. gsplat training for `iters` iterations on a single GPU.
+                   5. 5. Export `scene.ply`.
+                      6. 6. Upload to Supabase Storage. Return `{ "status": "complete", "ply_path": ... }`.
+                        
+                         7. ## Base image
+                        
+                         8. `nvidia/cuda:12.8.0-devel-ubuntu22.04` + Python 3.10 + PyTorch 2.8 (cu128) + gsplat 1.5.3.
+                         9. 
