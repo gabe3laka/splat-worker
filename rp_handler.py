@@ -223,7 +223,7 @@ def handler(job: Dict[str, Any]) -> Dict[str, Any]:
         video_url = _require_input(job_input, "video_url")
         scan_id = _require_input(job_input, "scan_id")
         patient_id = _require_input(job_input, "patient_id")
-        iters = int(job_input.get("iters") or os.environ.get("SPLAT_ITERS") or 15000)
+        iters = int(job_input.get("iters") or os.environ.get("SPLAT_ITERS") or 7000)
         if iters < 1000 or iters > 60000:
             raise ValueError(f"iters out of range: {iters}")
 
@@ -257,12 +257,7 @@ def handler(job: Dict[str, Any]) -> Dict[str, Any]:
         tb = traceback.format_exc()
         _progress("ERROR: " + str(e))
         sys.stderr.write(tb)
-        return {
-            "status": "failed",
-            "scan_id": job_input.get("scan_id"),
-            "error": str(e),
-            "traceback": tb,
-        }
+        raise
 
 
 if __name__ == "__main__":
