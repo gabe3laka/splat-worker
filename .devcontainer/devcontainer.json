@@ -1,0 +1,26 @@
+{
+    "name": "3.10-splat-worker",
+    "description": "Environment for 3D Gaussian Splats",
+    "variables": [
+        {
+            "key": "SUPABASE_URL",
+            "value": "ADD_SUPABASE_URL"
+        },
+        {
+            "key": "SUPABASE_SERVICE_ROLE_KEY",
+            "value": "ADD_SERVICE_ROLE_KEY"
+        },
+        {
+            "key": "SPLAT_ITERS",
+            "value": "7000"
+        },
+        {
+            "key": "SPLAT_FPS",
+            "value": "2"
+        },
+        {
+            "key": "SUPABASE_BUCKET",
+            "value": "scan-splats"
+        }
+    ]
+}
